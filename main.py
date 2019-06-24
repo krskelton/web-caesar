@@ -8,23 +8,25 @@ app.config['DEBUG'] = True
 
 form = """
 <!DOCTYPE html>
-
 <html>
     <head>
-        <style>
-            form {
-                background-color: #eee;
-                padding: 20px;
-                margin: 0 auto;
-                width: 540px;
-                font: 16px sans-serif;
-                border-radius: 10px;
-            }
-            textarea {
-                margin: 10px 0;
-                width: 540px;
-                height: 120px;
-            }
+        <style> 
+                form {{ 
+                    background-color: #eee;
+                    padding: 20px;
+                    margin: 0 auto;
+                    width: 540px;
+                    font: 16px sans-serif;
+                    border-radius: 10px;
+                }}
+                textarea {{
+                    margin: 10px 0;
+                    width: 540px;
+                    height: 120px;
+                }}
+                .error {{ 
+                    color: red; 
+                }}
         </style>
     </head>
     <body>
@@ -33,7 +35,8 @@ form = """
             <label>Rotate by:
                 <input type="text" name="rot" value="0"/>
             </label>
-            <textarea name="text"></textarea>
+            <p class="error">{rot_errors}</p>
+            <textarea name="text">{encrypt_string}</textarea>
             <input type="submit" />          
         </form>
     </body>
@@ -42,7 +45,7 @@ form = """
 
 @app.route("/")
 def index():
-    return form
+    return form.format(rot_errors='', encrypt_string='')
 
 def is_integer(num):
     try:
@@ -56,14 +59,19 @@ def encrypt():
     rot = request.form['rot']
     text = request.form['text']
 
+    rot_errors = ''
+    encrypt_string = ''
+
     if not is_integer(rot):
-        rot_error = 'Not a valid integer'
+        rot_errors = 'Not a valid integer'
         rot=''
     else:
         rot = int(rot)
     
-    encrypt_string = rotate_string(text, rot)
-
-    return "<h1>" + encrypt_string + "</h1>"
+    if not rot_errors:
+        encrypt_string = rotate_string(text, rot)
+        return form.format(rot_errors='', encrypt_string=encrypt_string)
+    else:
+        return form.format(rot_errors=rot_errors, encrypt_string='')
 
 app.run()
